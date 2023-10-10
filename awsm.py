@@ -70,8 +70,8 @@ def main():
     )
     parser.add_argument(
         "command",
-        help="The command to execute. Example: ssh-ec2, sync-ec2, sync-s3, ...",
-        choices=["sync-ec2", "sync-s3", "ssh-ec2"],
+        help="The command to execute. Example: ec2-sync, s3-sync, ec2-ssh, ...",
+        choices=["ec2-sync", "s3-sync", "ec2-ssh"],
     )
 
     parser.add_argument(
@@ -81,7 +81,6 @@ def main():
 
     args = parser.parse_args()
     config = load_config(args.project)  # Load config for the chosen project
-
     if args.command == "ec2-sync":
         run_shell_script("ec2-sync.sh", config)
         
