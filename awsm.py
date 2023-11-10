@@ -20,20 +20,17 @@ def extract_credentials(credentials_path):
         return aws_access_key_id.strip(), aws_secret_access_key.strip()
 
 
-def load_config(project_name):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(script_dir, "config.json")
+def load_config(current_dir):
+    
+    config_path = os.path.join(current_dir, "awsm_config.json")
 
-    with open(config_path, "r") as f:
-        configs = json.load(f)
-        config = configs.get(project_name)
-
-        if config:
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
             return config
-        else:
-            print(
-                f"ERROR: config.json file not found for project {project_name}!"
-            )
+    except FileNotFoundError:
+        print(f"ERROR: Unable to find awsm_config.json in the current working directory.")
+        sys.exit(1)
 
 
 def run_shell_script(script_name, config):
@@ -74,13 +71,9 @@ def main():
         choices=["ec2-sync", "s3-sync", "ec2-ssh"],
     )
 
-    parser.add_argument(
-        "project",
-        help="The project name. Example: market-intelligence, sigma-website, ...",
-    )
 
     args = parser.parse_args()
-    config = load_config(args.project)  # Load config for the chosen project
+    config = load_config(os.getcwd())  # Load config in the current directory
     if args.command == "ec2-sync":
         run_shell_script("ec2-sync.sh", config)
         

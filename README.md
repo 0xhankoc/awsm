@@ -1,6 +1,3 @@
-Absolutely, you can directly copy and paste the following markdown for your `README.md`:
-
-
 # AWSM: AWS CLI Helper Tool
 
 AWSM is a command-line helper tool designed to streamline routine AWS tasks like syncing local files with an EC2 instance or an S3 bucket, and establishing SSH connections with EC2 instances.
@@ -10,7 +7,7 @@ AWSM is a command-line helper tool designed to streamline routine AWS tasks like
 Before you start using AWSM, ensure you have Python and necessary modules installed on your machine.
 
 ```bash
-git clone <your-repo-link>
+git clone https://github.com/0xhankoc/awsm
 cd awsm
 pip install -r requirements.txt
 ```
@@ -25,21 +22,27 @@ export PATH="$PATH:/path-to-awsm-directory"
 
 ### Configurations
 
-Ensure your configurations for each project are in `config.json` within the `awsm` directory.
+Create an `awsm_config.json` file in your project directory. 
 
-Example `config.json`:
-
+Depending on which AWS infra (EC2 / S3) the project is using, fill out the
+following fields in the project config file named `awsm_config.json`:
 ```json
 {
   "market-intelligence": {
-    "PEM_FILE_PATH": "/path/to/pem/file",
-    "EC2_USER": "ec2-user",
-    "REPO_DIR_NAME": "repo-dir-name",
-    "APP_DIR_PATH": "/app/dir/path",
-    "REPO_DIR_PATH": "/repo/dir/path",
-    "EC2_ADDRESS": "ec2-address"
+    "ec2": {
+      "PEM_FILE_PATH": "/path/to/pem/file",
+      "EC2_USER": "ec2-user",
+      "REPO_DIR_NAME": "repo-dir-name",
+      "APP_DIR_PATH": "/app/dir/path",
+      "REPO_DIR_PATH": "/repo/dir/path",
+      "EC2_ADDRESS": "ec2.address.here"
+    },
+    "s3": {
+      "S3_BUCKET": "s3_bucket_name",
+      "REPO_DIR_NAME": "name_of_directory",
+      "REPO_DIR_PATH": "/local/path/to/project/files"
+    }
   }
-  ...
 }
 ```
 
@@ -52,7 +55,7 @@ AWSM supports the following commands:
 Synchronize your local project files with your EC2 instance.
 
 ```bash
-awsm ec2-sync [project-name]
+awsm ec2-sync 
 ```
 
 ### 2️⃣ Syncing with S3
@@ -60,7 +63,7 @@ awsm ec2-sync [project-name]
 Synchronize your local project files with your S3 bucket.
 
 ```bash
-awsm s3-sync [project-name]
+awsm s3-sync
 ```
 
 ### 3️⃣ SSH into EC2
@@ -68,34 +71,21 @@ awsm s3-sync [project-name]
 Establish an SSH connection with your EC2 instance.
 
 ```bash
-awsm ec2-ssh [project-name]
+awsm ec2-ssh
 ```
 
 ### 📜 Note
 
-- Replace `[project-name]` with the actual project name defined in `config.json`.
 - Ensure your AWS credentials are configured properly in your environment to use AWS services.
 
-## 🧐 Troubleshooting & FAQ
-
-**Q:** I'm encountering a "No such file or directory" error.
-
-**A:** Ensure all file paths in your `config.json` are correct and that the respective files exist.
-
-_For more FAQ and Troubleshooting, refer to the [FAQ](link-to-faq-page) section in our wiki._
 
 ## 🙌 Contributing
-
 If you wish to contribute to this project, please fork the repository and submit a pull request!
 
 ## 📜 License
-
 This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
-
 - Thanks to AWS for the versatile cloud services.
 - Anyone who contributes to open-source projects!
 ```
-
-Feel free to tailor the content per your project's specific requirements and details.
