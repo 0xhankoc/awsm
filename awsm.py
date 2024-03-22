@@ -33,7 +33,7 @@ def load_config(current_dir):
         sys.exit(1)
 
 
-def run_shell_script(script_name, config):
+def run_shell_script(script_name, config, extra_args=None):
     aws_access_key_id, aws_secret_access_key = extract_credentials(config['credentials'])
     env_vars = os.environ.copy()
     env_vars['AWS_ACCESS_KEY_ID'] = aws_access_key_id
@@ -53,9 +53,16 @@ def run_shell_script(script_name, config):
     
     script_dir = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(script_dir, script_name)
+    
+    command = [script_path] + extra_args if extra_args else [script_path]
+    command = ' '.join(command)
+    
+    #command = [script_path]
+    #if extra_args:
+    #    command.extend(extra_args)
 
     try:
-        subprocess.run([script_path], env=env_vars, check=True, shell=True)
+        subprocess.run(command, env=env_vars, check=True, shell=True)
     except subprocess.CalledProcessError as e:
         sys.stderr.write(f"Error executing {script_name}: {str(e)}\n")
         sys.exit(1)
@@ -68,20 +75,24 @@ def main():
     parser.add_argument(
         "command",
         help="The command to execute. Example: ec2-sync, s3-sync, ec2-ssh, ...",
-        choices=["ec2-sync", "s3-sync", "ec2-ssh"],
+        choices=["ec2-sync", "s3-sync", "ec2-ssh", "ec2-scp"],
     )
 
+    if 'ec2-scp' in sys.argv:
+        parser.add_argument("LOCAL_DIR_PATH", help="Local directory path for the scp command")
+        parser.add_argument("REMOTE_DIR_PATH", help="Remote directory path for the scp command")
 
     args = parser.parse_args()
     config = load_config(os.getcwd())  # Load config in the current directory
     if args.command == "ec2-sync":
         run_shell_script("ec2-sync.sh", config)
-        
     elif args.command == "s3-sync":
         run_shell_script("s3-sync.sh", config)
-        
     elif args.command == "ec2-ssh":
         run_shell_script("ec2-ssh.sh", config)
+    elif args.command == "ec2-scp":
+        extra_args = [args.LOCAL_DIR_PATH, args.REMOTE_DIR_PATH]
+        run_shell_script("ec2-scp.sh", config, extra_args)
     else:
         sys.stderr.write("ERROR: Invalid command\n")
         sys.exit(1)
