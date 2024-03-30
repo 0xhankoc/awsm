@@ -1,13 +1,8 @@
-import os
 import subprocess
 
-# Define paths and variables
-S3_BUCKET = os.getenv('S3_BUCKET')
-REPO_DIR_PATH = os.getenv('LOCAL_DIR_PATH')
 
-
-def s3sync():
-    sync_command = f'aws s3 sync {REPO_DIR_PATH} s3://{S3_BUCKET}/'
+def s3sync(S3_BUCKET, LOCAL_DIR_PATH):
+    sync_command = f'aws s3 sync {LOCAL_DIR_PATH} s3://{S3_BUCKET}/'
     result = subprocess.run(sync_command, shell=True)
 
     if result.returncode == 0:
