@@ -3,14 +3,20 @@ This file is the main script for the rest of the shell scripts included in
 this repository. The scripts are used as shortcuts for common AWS actions.
 Used for CI/CD.
 """
-import csv
 import os
 import argparse
-import subprocess
 import sys
 import json
+import csv
 
-def extract_credentials(credentials_path):
+from ec2sync import ec2sync
+from ec2ssh import ec2ssh
+from s3sync import s3sync
+
+AWSM_ROOT_PATH = os.path.abspath(__file__)
+PROJECT_ROOT_PATH = os.getcwd()
+
+def _aws_credentials(credentials_path):
     with open(credentials_path, mode='r') as file:
         reader = csv.reader(file)
         # Skip header
@@ -20,10 +26,8 @@ def extract_credentials(credentials_path):
         return aws_access_key_id.strip(), aws_secret_access_key.strip()
 
 
-def load_config(current_dir):
-    
-    config_path = os.path.join(current_dir, "awsm_config.json")
-
+def _awsm_config(project_directory):
+    config_path = os.path.join(project_directory, "awsm_config.json")
     try:
         with open(config_path, "r") as f:
             config = json.load(f)
@@ -33,39 +37,8 @@ def load_config(current_dir):
         sys.exit(1)
 
 
-def run_shell_script(script_name, config, extra_args=None):
-    aws_access_key_id, aws_secret_access_key = extract_credentials(config['credentials'])
-    env_vars = os.environ.copy()
-    env_vars['AWS_ACCESS_KEY_ID'] = aws_access_key_id
-    env_vars['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
-    
-    # If EC2 config is present, pass those as well
-    ec2_config = config.get('ec2')
-    if ec2_config:
-        for key, value in ec2_config.items():
-            env_vars[key.upper()] = value
-    
-    # If S3 config is present, pass those as well
-    s3_config = config.get('s3')
-    if s3_config:
-        for key, value in s3_config.items():
-            env_vars[key.upper()] = value
-    
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    script_path = os.path.join(script_dir, script_name)
-    
-    command = [script_path] + extra_args if extra_args else [script_path]
-    command = ' '.join(command)
-    
-    #command = [script_path]
-    #if extra_args:
-    #    command.extend(extra_args)
-
-    try:
-        subprocess.run(command, env=env_vars, check=True, shell=True)
-    except subprocess.CalledProcessError as e:
-        sys.stderr.write(f"Error executing {script_name}: {str(e)}\n")
-        sys.exit(1)
+def _script_of_command(script_name: str) -> str:
+    return os.path.join(AWSM_ROOT_PATH, script_name)
 
 
 def main():
@@ -74,28 +47,33 @@ def main():
     )
     parser.add_argument(
         "command",
-        help="The command to execute. Example: ec2-sync, s3-sync, ec2-ssh, ...",
+        help="The command to execute. Example: ec2sync, s3sync, ec2ssh, ...",
         choices=["ec2-sync", "s3-sync", "ec2-ssh", "ec2-scp"],
     )
 
-    if 'ec2-scp' in sys.argv:
-        parser.add_argument("LOCAL_DIR_PATH", help="Local directory path for the scp command")
-        parser.add_argument("REMOTE_DIR_PATH", help="Remote directory path for the scp command")
-
     args = parser.parse_args()
-    config = load_config(os.getcwd())  # Load config in the current directory
-    if args.command == "ec2-sync":
-        run_shell_script("ec2-sync.sh", config)
-    elif args.command == "s3-sync":
-        run_shell_script("s3-sync.sh", config)
-    elif args.command == "ec2-ssh":
-        run_shell_script("ec2-ssh.sh", config)
-    elif args.command == "ec2-scp":
-        extra_args = [args.LOCAL_DIR_PATH, args.REMOTE_DIR_PATH]
-        run_shell_script("ec2-scp.sh", config, extra_args)
-    else:
-        sys.stderr.write("ERROR: Invalid command\n")
-        sys.exit(1)
+    config = _awsm_config(PROJECT_ROOT_PATH)
+
+    if args.command=='ec2-ssh':
+        ec2ssh(
+            config['EC2']['EC2_USER'],
+            config['EC2']['EC2_ADDRESS'],
+            config['EC2']['PEM_FILE_PATH']
+        )
+    elif args.command=='ec2-sync':
+        ec2sync(
+            config['EC2']['EC2_USER'],
+            config['EC2']['EC2_ADDRESS'],
+            config['EC2']['PEM_FILE_PATH'],
+            config['EC2']['SOURCE_DIR_PATH'],
+            config['EC2']['TARGET_DIR_PATH'],
+            config['EC2']['IGNORE_PATTERNS']
+        )
+    elif args.command=='s3-sync':
+        s3sync(
+            config['S3']['BUCKET_NAME'],
+            config['S3']['LOCAL_DIR_PATH']
+        )
 
 
 if __name__ == "__main__":
