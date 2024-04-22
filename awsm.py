@@ -27,14 +27,26 @@ def _aws_credentials(credentials_path):
 
 
 def _awsm_config(project_directory):
-    config_path = os.path.join(project_directory, "awsm_config.json")
-    try:
-        with open(config_path, "r") as f:
-            config = json.load(f)
-            return config
-    except FileNotFoundError:
-        print(f"ERROR: Unable to find awsm_config.json in the current working directory.")
-        sys.exit(1)
+    # List of potential paths for the configuration file
+    possible_paths = [
+        os.path.join(project_directory, "awsm_config.json"),
+        os.path.join(project_directory, "configs", "awsm_config.json")
+    ]
+    
+    # Iterate through the list of possible paths
+    for path in possible_paths:
+        try:
+            with open(path, "r") as f:
+                # Return the config if found
+                config = json.load(f)
+                return config
+        except FileNotFoundError:
+            # Continue to next path if file is not found
+            continue
+
+    # If no file is found after all attempts, print error and exit
+    print(f"ERROR: Unable to find awsm_config.json in specified paths.")
+    sys.exit(1)
 
 
 def _script_of_command(script_name: str) -> str:
