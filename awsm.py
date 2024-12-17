@@ -12,9 +12,28 @@ import csv
 from ec2sync import ec2sync
 from ec2ssh import ec2ssh
 from s3sync import s3sync
+from ec2scp import ec2scp
 
 AWSM_ROOT_PATH = os.path.abspath(__file__)
 PROJECT_ROOT_PATH = os.getcwd()
+
+def print_usage():
+    print("""
+Usage: awsm [command] [args...]
+
+Available commands:
+  ec2-sync         Sync local files to EC2 instance
+  s3-sync          Sync local files with S3 bucket
+  ec2-ssh          SSH into EC2 instance
+  ec2-scp          Download files/folders from EC2 to local
+
+Examples:
+  awsm ec2-sync
+  awsm s3-sync
+  awsm ec2-ssh
+  awsm ec2-scp [REMOTE_PATH] [LOCAL_PATH]
+""")
+
 
 def _aws_credentials(credentials_path):
     with open(credentials_path, mode='r') as file:
@@ -54,13 +73,30 @@ def _script_of_command(script_name: str) -> str:
 
 
 def main():
+
+    if len(sys.argv) < 2:
+        print_usage()
+        sys.exit(1)
     parser = argparse.ArgumentParser(
-        description="Helper script to execute different actions."
+        description="AWSM: AWS CLI Helper Tool"
     )
+
     parser.add_argument(
         "command",
         help="The command to execute. Example: ec2sync, s3sync, ec2ssh, ...",
         choices=["ec2-sync", "s3-sync", "ec2-ssh", "ec2-scp"],
+    )
+
+    parser.add_argument(
+        "remote_path",
+        nargs='?',
+        help="The remote file/folder path on EC2 instance to copy from (required for ec2-scp)"
+    )
+
+    parser.add_argument(
+        "local_path",
+        nargs='?',
+        help="The local destination path (required for ec2-scp)"
     )
 
     args = parser.parse_args()
@@ -86,6 +122,17 @@ def main():
             config['S3']['BUCKET_NAME'],
             config['S3']['LOCAL_DIR_PATH']
         )
+    elif args.command=='ec2-scp':
+        ec2scp(
+            config['EC2']['EC2_USER'],
+            config['EC2']['EC2_ADDRESS'],
+            config['EC2']['PEM_FILE_PATH'],
+            args.remote_path,
+            args.local_path
+        )
+    else:
+        print_usage()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

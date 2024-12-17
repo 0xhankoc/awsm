@@ -28,22 +28,17 @@ Depending on which AWS infra (EC2 / S3) the project is using, fill out the
 following fields in the project config file named `awsm_config.json`:
 ```json
 {
-  "market-intelligence": {
-    "ec2": {
-      "PEM_FILE_PATH": "/path/to/pem/file",
-      "EC2_USER": "ec2-user",
-      "REPO_DIR_NAME": "repo-dir-name",
-      "APP_DIR_PATH": "/app/dir/path",
-      "REPO_DIR_PATH": "/repo/dir/path",
-      "EC2_ADDRESS": "ec2.address.here"
-    },
-    "s3": {
-      "S3_BUCKET": "s3_bucket_name",
-      "REPO_DIR_NAME": "name_of_directory",
-      "REPO_DIR_PATH": "/local/path/to/project/files"
-    }
+  "CREDENTIALS": "/Users/orhankoc/.aws/sigma/root/orhankoc_accessKeys.csv",
+  "EC2": {
+    "EC2_USER": "ec2-user",
+    "EC2_ADDRESS": "44.239.71.1",
+    "PEM_FILE_PATH": "/Users/orhankoc/.aws/sigma/root/etl/orhan2.pem",
+    "TARGET_DIR_PATH": "/home/ec2-user",
+    "SOURCE_DIR_PATH": "/Users/orhankoc/Documents/850house/kaizen/kaizen-backend",
+    "IGNORE_PATTERNS": ["assets/images/*", "node_modules/*", "logs/*"]
   }
 }
+
 ```
 
 ## 🛠 Usage
