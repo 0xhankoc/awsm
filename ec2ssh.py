@@ -15,8 +15,6 @@ def ec2ssh(ec2_user: str, ec2_address: str, pem_file_path: str):
         "-i", pem_file_path,
         f"{ec2_user}@{ec2_address}"
     ]
-    print(ssh_command)
-    print(' '.join(ssh_command))
 
     result = subprocess.run(ssh_command, shell=False, check=True, text=True)
 

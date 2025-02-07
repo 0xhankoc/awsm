@@ -29,6 +29,8 @@ def ec2sync(
             [
                 "rsync",
                 "-avz",
+                "--no-times",
+                "--no-perms",
                 "-e",
                 f"ssh -i {pem_path}",
             ] + ignore_args + [
